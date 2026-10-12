@@ -1,5 +1,6 @@
 import OpenAI from "openai";
 import { DefaultAzureCredential } from "@azure/identity";
+import { config } from "../../shared/config.js";
 
 // Get Microsoft Entra ID token
 async function getToken() {
@@ -14,23 +15,23 @@ async function getToken() {
 
 async function main() {
 
-    // Your Microsoft Foundry project endpoint
-    const projectEndpoint =
-        "https://rakeshvarade-ai103-project.services.ai.azure.com/api/projects/rakeshvarade-1667";
+    // Read project configuration from shared/config.js
+    const projectEndpoint = config.foundry.projectEndpoint;
 
-    // IMPORTANT: Use deployment name, not model catalog ID
-    const deploymentName = "gpt-5.4-mini";
+    // IMPORTANT:
+    // This should be your deployment name.
+    const deploymentName = config.foundry.model;
 
-    // Build OpenAI compatible endpoint
+    // Build the OpenAI-compatible endpoint
     const baseURL =
         projectEndpoint.replace(/\/+$/, "") + "/openai/v1";
 
-    // Get Entra ID token
+    // Get Microsoft Entra ID token
     const token = await getToken();
 
     // Create OpenAI client
     const client = new OpenAI({
-        baseURL: baseURL,
+        baseURL,
         apiKey: token
     });
 
@@ -39,7 +40,7 @@ async function main() {
 
         model: deploymentName,
 
-        // Think of this as instructions for how the AI should behave
+        // Instructions define how the AI should behave
         instructions: `
             You are an experienced Microsoft Azure Cloud Architect.
 
@@ -77,4 +78,15 @@ async function main() {
     console.log("Output Tokens:", response.usage?.output_tokens);
 }
 
-main().catch(console.error);
+main().catch((error) => {
+
+    console.error("\nApplication failed.");
+
+    if (error instanceof Error) {
+        console.error("Message:", error.message);
+    } else {
+        console.error(error);
+    }
+
+    process.exitCode = 1;
+});

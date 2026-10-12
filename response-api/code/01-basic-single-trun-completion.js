@@ -1,50 +1,82 @@
 import OpenAI from "openai";
 import { DefaultAzureCredential } from "@azure/identity";
+import { config } from "../../shared/config.js";
 
+/**
+ * Get a Microsoft Entra ID access token
+ * for Microsoft Foundry.
+ */
 async function getToken() {
-    const credential = new DefaultAzureCredential();
+  const credential = new DefaultAzureCredential();
 
-    const tokenResponse = await credential.getToken(
-        "https://ai.azure.com/.default"
-    );
+  const tokenResponse = await credential.getToken(
+    "https://ai.azure.com/.default"
+  );
 
-    return tokenResponse.token;
+  return tokenResponse.token;
 }
 
 async function main() {
+  console.log("Starting Microsoft Foundry Responses API sample...\n");
 
-    const projectEndpoint =
-        "https://rakeshvarade-ai103-project.services.ai.azure.com/api/projects/rakeshvarade-1667";
+  // 1. Read configuration from shared/config.js
 
-    const deploymentName = "gpt-5.4-mini";
+  const projectEndpoint = config.foundry.projectEndpoint;
+  const deploymentName = config.foundry.model;
 
-    const baseURL =
-        projectEndpoint.replace(/\/+$/, "") + "/openai/v1";
 
-    const token = await getToken();
+  // 2. Build the OpenAI-compatible API endpoint
 
-    const client = new OpenAI({
-        baseURL: baseURL,
-        apiKey: token
-    });
+  const baseURL =
+    projectEndpoint.replace(/\/+$/, "") + "/openai/v1";
 
-    const response = await client.responses.create({
-        model: deploymentName,
-        input: "Explain Azure Landing Zone in simple language in 5 bullet points.",
-        max_output_tokens: 500
-    });
 
-    console.log("\nAI Response:\n");
-    console.log(response.output_text);
+  // 3. Get Microsoft Entra ID token
 
-    console.log("\nStatus:");
-    console.log(response.status);
+  const token = await getToken();
 
-    console.log("\nModel:");
-    console.log(response.model);
 
-    console.log("\nUsage:");
-    console.log(response.usage);
+  // 4. Create OpenAI client
+
+  const client = new OpenAI({
+    baseURL,
+    apiKey: token,
+  });
+
+
+  // 5. Call the Responses API
+
+  const response = await client.responses.create({
+    model: deploymentName,
+    input:
+      "Explain Azure Landing Zone in simple language in 5 bullet points.",
+    max_output_tokens: 500,
+  });
+
+  // ---------------------------------------------------------
+  // 6. Display response
+  // ---------------------------------------------------------
+  console.log("AI Response:\n");
+  console.log(response.output_text);
+
+  console.log("\nStatus:");
+  console.log(response.status);
+
+  console.log("\nModel:");
+  console.log(response.model);
+
+  console.log("\nUsage:");
+  console.log(response.usage);
 }
 
-main().catch(console.error);
+main().catch((error) => {
+  console.error("\nApplication failed.");
+
+  if (error instanceof Error) {
+    console.error(error.message);
+  } else {
+    console.error(error);
+  }
+
+  process.exitCode = 1;
+});
