@@ -1,8 +1,11 @@
+import { existsSync } from "node:fs";
 import { resolve } from "node:path";
 
-// Expected execution location:
-// C:\foundry\azure-ai-foundry-js-samples
-process.loadEnvFile(resolve(process.cwd(), ".env"));
+const envFile = resolve(process.cwd(), ".env");
+
+if (existsSync(envFile)) {
+  process.loadEnvFile(envFile);
+}
 
 function required(name) {
   const value = process.env[name];
@@ -17,8 +20,8 @@ function required(name) {
 }
 
 export const config = Object.freeze({
-  foundry: {
+  foundry: Object.freeze({
     projectEndpoint: required("AZURE_FOUNDRY_PROJECT_ENDPOINT"),
     model: required("AZURE_FOUNDRY_MODEL"),
-  },
+  }),
 });

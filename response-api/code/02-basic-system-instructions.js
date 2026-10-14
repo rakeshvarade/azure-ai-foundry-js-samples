@@ -1,17 +1,7 @@
-import OpenAI from "openai";
-import { DefaultAzureCredential } from "@azure/identity";
-import { config } from "../../shared/config.js";
-
-// Get Microsoft Entra ID token
-async function getToken() {
-    const credential = new DefaultAzureCredential();
-
-    const tokenResponse = await credential.getToken(
-        "https://ai.azure.com/.default"
-    );
-
-    return tokenResponse.token;
-}
+import {
+    config,
+    createOpenAIClient,
+} from "../../shared/foundry.js";
 
 async function main() {
 
@@ -22,18 +12,8 @@ async function main() {
     // This should be your deployment name.
     const deploymentName = config.foundry.model;
 
-    // Build the OpenAI-compatible endpoint
-    const baseURL =
-        projectEndpoint.replace(/\/+$/, "") + "/openai/v1";
-
-    // Get Microsoft Entra ID token
-    const token = await getToken();
-
-    // Create OpenAI client
-    const client = new OpenAI({
-        baseURL,
-        apiKey: token
-    });
+    // Create an authenticated OpenAI client
+    const client = createOpenAIClient({ endpoint: projectEndpoint });
 
     // Call Responses API
     const response = await client.responses.create({

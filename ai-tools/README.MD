@@ -39,11 +39,26 @@ const tools = [{ type: "file_search" }];
 // Example call to define a custom function tool
 const tools = [{
     type: "function",
-    function: {
-        name: "get_current_weather",
-        description: "Get the current weather",
-        parameters: {} // Define your parameter schema here
+    name: "get_current_weather",
+    description: "Get the current weather",
+    strict: true,
+    parameters: {
+        type: "object",
+        properties: {
+            location: { type: "string" }
+        },
+        required: ["location"],
+        additionalProperties: false
     }
 }];
 
 ```
+
+Run the complete function-calling example from the repository root:
+
+```powershell
+node .\ai-tools\code\03-tools-function-call.js
+```
+
+The example validates tool arguments, calls only functions in an explicit
+allowlist, sends each result back to the model, and limits repeated tool calls.
