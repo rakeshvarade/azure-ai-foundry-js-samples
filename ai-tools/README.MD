@@ -62,3 +62,19 @@ node .\ai-tools\code\03-tools-function-call.js
 
 The example validates tool arguments, calls only functions in an explicit
 allowlist, sends each result back to the model, and limits repeated tool calls.
+
+## File Search example
+
+The File Search example uploads this README, waits for Microsoft Foundry to
+index it, and asks a question whose answer is grounded in the document.
+It uses Microsoft Entra ID authentication and deletes the temporary uploaded
+file and vector store when finished.
+
+Run it from the repository root:
+
+```powershell
+node .\ai-tools\code\04-tools-file-search.js
+```
+
+Only upload documents that you are authorized to process. Avoid uploading
+secrets or sensitive personal information in sample applications.
